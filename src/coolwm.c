@@ -1,15 +1,25 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
+
+#include "debug.h"
 
 int main()
 {
     Display *display = XOpenDisplay(NULL);
 
+    if(!display)
+    {
+        DLOG("failed to open display.");
 
-    printf("Hello world\n");
-
+        return EXIT_FAILURE;
+    }
+    else
+    {
+        DLOG("%d", XScreenCount(display));
+    }
 
     XCloseDisplay(display);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
