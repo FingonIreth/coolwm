@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <X11/XKBlib.h>
 
 #include "debug.h"
 #include "utils.h"
@@ -19,10 +20,16 @@ void MappingNotifyHandler(Display *display, XEvent *e) {
         GrabKeys(display);
 }
 
-void KeyPressHandler(XEvent *xevent)
+void KeyPressHandler(Display *display, XEvent *xevent)
 {
-    char* cmd[] = {"dmenu_run", NULL};
-    Spawn(cmd);
+    XKeyEvent *xKeyEvent = (XKeyEvent *)xevent;
+
+    if((xKeyEvent->state & Mod4Mask)
+        && (XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0) == XK_r))
+    {
+        char* cmd[] = {"dmenu_run", NULL};
+        Spawn(cmd);
+    }
 }
 
 int Setup(Display *display)
@@ -53,7 +60,7 @@ void Run(Display *display)
                 break;
             case KeyPress:
                 DLOG("keypress event");
-                KeyPressHandler(&xevent);
+                KeyPressHandler(display, &xevent);
                 break;
             case KeyRelease:
                 DLOG("keyrelease event");
