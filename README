@@ -1,3 +1,6 @@
 coolwm is aimed to be simple tiling window manager similar to awesome window manager.
 
-status: unuseable
+status: useable altough it lacks a lot of features.
+
+super + r - starts dmenu launcher
+super + c - closes active window
