@@ -3,74 +3,42 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 #include "debug.h"
+#include "utils.h"
+#include "grab.h"
 
-Bool grabKeys(Display *display);
-
-void mappingNotifyHandler(Display *display, XEvent *e) {
+void MappingNotifyHandler(Display *display, XEvent *e) {
     XMappingEvent *ev = &e->xmapping;
 
     XRefreshKeyboardMapping(ev);
     if(ev->request == MappingKeyboard)
-        grabKeys(display);
+        GrabKeys(display);
 }
 
-unsigned int numlockMask(Display *display)
+void KeyPressHandler(XEvent *xevent)
 {
-	unsigned int i, j;
-	XModifierKeymap *modmap;
-
-	unsigned int numlockmask = 0;
-	modmap = XGetModifierMapping(display);
-	for(i = 0; i < 8; i++)
-		for(j = 0; j < modmap->max_keypermod; j++)
-			if(modmap->modifiermap[i * modmap->max_keypermod + j]
-			   == XKeysymToKeycode(display, XK_Num_Lock))
-				numlockmask = (1 << i);
-	XFreeModifiermap(modmap);
-
-    return numlockmask;
+    char* cmd[] = {"dmenu_run", NULL};
+    Spawn(cmd);
 }
 
-Bool grabKeys(Display *display)
+int Setup(Display *display)
 {
-    Window root = XDefaultRootWindow(display);
+    signal(SIGCHLD, CatchExitStatus);
 
-    XUngrabKey(display, AnyKey, AnyModifier, root);
-
-    KeyCode keycode = XKeysymToKeycode(display, XK_r);
-    if(!keycode)
+    if(GrabKeys(display))
     {
+        DLOG("failed to grabKeys.");
         return 1;
     }
-
-    unsigned int numlockmask = numlockMask(display);
-    unsigned int modifiers[] = {0, LockMask, numlockmask, numlockmask | LockMask};
-    int modifiers_count = 4;
-    for(int i = 0; i < modifiers_count; ++i)
-    {
-        XGrabKey(display, keycode, Mod4Mask | modifiers[i], root,
-                 True, GrabModeAsync, GrabModeAsync);
-    }
-
-    XFlush(display);
 
     return 0;
 }
 
-void spawn(char* cmd[]);
-
-void keypressHandler(XEvent *xevent)
-{
-    char* cmd[] = {"dmenu_run", NULL};
-    spawn(cmd);
-}
-
-void run(Display *display)
+void Run(Display *display)
 {
     XEvent xevent;
 
@@ -81,11 +49,11 @@ void run(Display *display)
         {
             case MappingNotify:
                 DLOG("mappingnotify event");
-                mappingNotifyHandler(display, &xevent);
+                MappingNotifyHandler(display, &xevent);
                 break;
             case KeyPress:
                 DLOG("keypress event");
-                keypressHandler(&xevent);
+                KeyPressHandler(&xevent);
                 break;
             case KeyRelease:
                 DLOG("keyrelease event");
@@ -93,22 +61,6 @@ void run(Display *display)
             default:
                 DLOG("event type %d not handled", xevent.type);
         }
-    }
-}
-
-void catch_exit_status(int sig)
-{
-    while(0 < waitpid(-1, NULL, WNOHANG));
-}
-
-void spawn(char* cmd[])
-{
-    signal(SIGCHLD, catch_exit_status); //this should be run only once
-    if(fork() == 0)
-    {
-        setsid();
-        execvp(cmd[0], cmd);
-        exit(EXIT_FAILURE);
     }
 }
 
@@ -123,12 +75,13 @@ int main()
         return EXIT_FAILURE;
     }
 
-    if(grabKeys(display))
+    if(Setup(display))
     {
-        DLOG("failed to grabKeys.");
+        DLOG("setup failed.");
+        return EXIT_FAILURE;
     }
 
-    run(display);
+    Run(display);
 
     XCloseDisplay(display);
 
