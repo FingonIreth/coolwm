@@ -1,8 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-void Spawn(char* cmd[]);
+void Spawn(char* command[]);
 
-void CatchExitStatus(int sig);
+void CatchExitStatus(int signum);
 
 #endif /* UTILS_H */

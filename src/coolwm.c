@@ -12,23 +12,25 @@
 #include "utils.h"
 #include "grab.h"
 
-void MappingNotifyHandler(Display *display, XEvent *e) {
-    XMappingEvent *ev = &e->xmapping;
+void MappingNotifyHandler(Display *display, XEvent *event) {
+    XMappingEvent *mappingEvent = &event->xmapping;
 
-    XRefreshKeyboardMapping(ev);
-    if(ev->request == MappingKeyboard)
+    XRefreshKeyboardMapping(mappingEvent);
+    if(mappingEvent->request == MappingKeyboard)
         GrabKeys(display);
 }
 
-void KeyPressHandler(Display *display, XEvent *xevent)
+void KeyPressHandler(Display *display, XEvent *xEvent)
 {
-    XKeyEvent *xKeyEvent = (XKeyEvent *)xevent;
+    XKeyEvent *xKeyEvent = (XKeyEvent *)xEvent;
 
-    if((xKeyEvent->state & Mod4Mask)
+    if((xKeyEvent->state & Mod4Mask) //XXX bug inviting code
+                                     //no difference between (Mod4Mask | ShiftMask) + r
+                                     //and Mod4Mask + r
         && (XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0) == XK_r))
     {
-        char* cmd[] = {"dmenu_run", NULL};
-        Spawn(cmd);
+        char* command[] = {"dmenu_run", NULL};
+        Spawn(command);
     }
 }
 
@@ -47,26 +49,26 @@ int Setup(Display *display)
 
 void Run(Display *display)
 {
-    XEvent xevent;
+    XEvent xEvent;
 
     XSync(display, False);
-    while(!XNextEvent(display, &xevent))
+    while(!XNextEvent(display, &xEvent))
     {
-        switch(xevent.type)
+        switch(xEvent.type)
         {
             case MappingNotify:
                 DLOG("mappingnotify event");
-                MappingNotifyHandler(display, &xevent);
+                MappingNotifyHandler(display, &xEvent);
                 break;
             case KeyPress:
                 DLOG("keypress event");
-                KeyPressHandler(display, &xevent);
+                KeyPressHandler(display, &xEvent);
                 break;
             case KeyRelease:
                 DLOG("keyrelease event");
                 break;
             default:
-                DLOG("event type %d not handled", xevent.type);
+                DLOG("event type %d not handled", xEvent.type);
         }
     }
 }

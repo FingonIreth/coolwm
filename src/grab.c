@@ -6,19 +6,24 @@
 
 unsigned int NumlockMask(Display *display)
 {
-	unsigned int i, j;
-	XModifierKeymap *modmap;
+	XModifierKeymap *modifierKeymap;
+	modifierKeymap = XGetModifierMapping(display);
 
-	unsigned int numlockmask = 0;
-	modmap = XGetModifierMapping(display);
-	for(i = 0; i < 8; i++)
-		for(j = 0; j < modmap->max_keypermod; j++)
-			if(modmap->modifiermap[i * modmap->max_keypermod + j]
+	unsigned int numlockMask = 0;
+	for(int i = 0; i < 8; i++)
+    {
+		for(int j = 0; j < modifierKeymap->max_keypermod; j++)
+        {
+			if(modifierKeymap->modifiermap[i * modifierKeymap->max_keypermod + j]
 			   == XKeysymToKeycode(display, XK_Num_Lock))
-				numlockmask = (1 << i);
-	XFreeModifiermap(modmap);
+            {
+				numlockMask = (1 << i);
+            }
+        }
+    }
+	XFreeModifiermap(modifierKeymap);
 
-    return numlockmask;
+    return numlockMask;
 }
 
 Bool GrabKeys(Display *display)
@@ -33,10 +38,10 @@ Bool GrabKeys(Display *display)
         return 1;
     }
 
-    unsigned int numlockmask = NumlockMask(display);
-    unsigned int modifiers[] = {0, LockMask, numlockmask, numlockmask | LockMask};
-    int modifiers_count = 4;
-    for(int i = 0; i < modifiers_count; ++i)
+    unsigned int numlockMask = NumlockMask(display);
+    unsigned int modifiers[] = {0, LockMask, numlockMask, numlockMask | LockMask};
+    int modifiersCount = 4;
+    for(int i = 0; i < modifiersCount; ++i)
     {
         XGrabKey(display, keycode, Mod4Mask | modifiers[i], root,
                  True, GrabModeAsync, GrabModeAsync);
