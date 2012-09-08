@@ -32,19 +32,23 @@ Bool GrabKeys(Display *display)
 
     XUngrabKey(display, AnyKey, AnyModifier, root);
 
-    KeyCode keycode = XKeysymToKeycode(display, XK_r);
-    if(!keycode)
-    {
-        return 1;
-    }
+    KeyCode keycode[] = {XKeysymToKeycode(display, XK_r), XKeysymToKeycode(display, XK_c)};
 
-    unsigned int numlockMask = NumlockMask(display);
-    unsigned int modifiers[] = {0, LockMask, numlockMask, numlockMask | LockMask};
-    int modifiersCount = 4;
-    for(int i = 0; i < modifiersCount; ++i)
+    for(int k = 0; k < 2; k++)
     {
-        XGrabKey(display, keycode, Mod4Mask | modifiers[i], root,
-                 True, GrabModeAsync, GrabModeAsync);
+        if(!keycode[k])
+        {
+            return 1;
+        }
+
+        unsigned int numlockMask = NumlockMask(display);
+        unsigned int modifiers[] = {0, LockMask, numlockMask, numlockMask | LockMask};
+        int modifiersCount = 4;
+        for(int i = 0; i < modifiersCount; ++i)
+        {
+            XGrabKey(display, keycode[k], Mod4Mask | modifiers[i], root,
+                     True, GrabModeAsync, GrabModeAsync);
+        }
     }
 
     XFlush(display);

@@ -20,6 +20,7 @@ void MappingNotifyHandler(Display *display, XEvent *event) {
         GrabKeys(display);
 }
 
+
 void KeyPressHandler(Display *display, XEvent *xEvent)
 {
     XKeyEvent *xKeyEvent = (XKeyEvent *)xEvent;
@@ -31,6 +32,17 @@ void KeyPressHandler(Display *display, XEvent *xEvent)
     {
         char* command[] = {"dmenu_run", NULL};
         Spawn(command);
+    }
+    else if((xKeyEvent->state & Mod4Mask) ///XXX like above
+            && (XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0) == XK_c))
+    {
+        if(xKeyEvent->subwindow)
+        {
+            if(SendEvent(display, xKeyEvent->subwindow, XInternAtom(display, "WM_DELETE_WINDOW", True)))
+            {
+                XKillClient(display, xKeyEvent->subwindow);
+            }
+        }
     }
 }
 

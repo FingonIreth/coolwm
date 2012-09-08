@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <X11/Xlib.h>
 
 void Spawn(char* command[])
 {
@@ -18,4 +19,35 @@ void Spawn(char* command[])
 void CatchExitStatus(int signum)
 {
     while(0 < waitpid(-1, NULL, WNOHANG));
+}
+
+
+int SendEvent(Display *display, Window window, Atom protocol)
+{
+    int protocolsCount;
+    Atom *protocols;
+    Bool foundProtocol = False;
+    XEvent xEvent;
+
+    if(XGetWMProtocols(display, window, &protocols, &protocolsCount))
+    {
+        int index = protocolsCount - 1;
+        while(!foundProtocol && index >= 0)
+        {
+            foundProtocol = (protocols[index] == protocol);
+        }
+        XFree(protocols);
+    }
+    if(foundProtocol)
+    {
+        xEvent.type = ClientMessage;
+        xEvent.xclient.window = window;
+        xEvent.xclient.message_type = XInternAtom(display, "WM_PROTOCOLS", True);
+        xEvent.xclient.format = 32;
+        xEvent.xclient.data.l[0] = protocol;
+        xEvent.xclient.data.l[1] = CurrentTime;
+        XSendEvent(display, window, False, NoEventMask, &xEvent);
+    }
+
+    return !foundProtocol;
 }
