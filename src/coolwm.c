@@ -3,6 +3,9 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "debug.h"
 
@@ -59,6 +62,14 @@ Bool grabKeys(Display *display)
     return 0;
 }
 
+void spawn(char* cmd[]);
+
+void keypressHandler(XEvent *xevent)
+{
+    char* cmd[] = {"dmenu_run", NULL};
+    spawn(cmd);
+}
+
 void run(Display *display)
 {
     XEvent xevent;
@@ -66,15 +77,38 @@ void run(Display *display)
     XSync(display, False);
     while(!XNextEvent(display, &xevent))
     {
-        DLOG("event type %d", xevent.type);
         switch(xevent.type)
         {
             case MappingNotify:
+                DLOG("mappingnotify event");
                 mappingNotifyHandler(display, &xevent);
                 break;
+            case KeyPress:
+                DLOG("keypress event");
+                keypressHandler(&xevent);
+                break;
+            case KeyRelease:
+                DLOG("keyrelease event");
+                break;
             default:
-                DLOG("event not handled");
+                DLOG("event type %d not handled", xevent.type);
         }
+    }
+}
+
+void catch_exit_status(int sig)
+{
+    while(0 < waitpid(-1, NULL, WNOHANG));
+}
+
+void spawn(char* cmd[])
+{
+    signal(SIGCHLD, catch_exit_status); //this should be run only once
+    if(fork() == 0)
+    {
+        setsid();
+        execvp(cmd[0], cmd);
+        exit(EXIT_FAILURE);
     }
 }
 
