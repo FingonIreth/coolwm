@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wformat -std=gnu99
+FLAGS = -Wall -Wformat -std=gnu99 -g3
 LIBS = -lX11
 SRC_DIR = src
 

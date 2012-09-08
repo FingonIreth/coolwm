@@ -35,6 +35,7 @@ int SendEvent(Display *display, Window window, Atom protocol)
         while(!foundProtocol && index >= 0)
         {
             foundProtocol = (protocols[index] == protocol);
+            index -= 1;
         }
         XFree(protocols);
     }
