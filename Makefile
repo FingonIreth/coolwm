@@ -1,5 +1,5 @@
 FLAGS = -Wall -Wformat -std=gnu99 -g3
-LIBS = -lX11
+LIBS = -lX11 -lXinerama
 SRC_DIR = src
 
 all: coolwm

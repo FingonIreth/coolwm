@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <X11/XKBlib.h>
+#include <X11/extensions/Xinerama.h>
 
 #include "debug.h"
 #include "utils.h"
