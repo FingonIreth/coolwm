@@ -1,8 +1,9 @@
 TODO
     moving windows
     resizing windows
-    introduce tags
     (un)maximizing window
+    fullscreen
+    introduce tags
     introduce statusbar
         list of tags with active tag highlighted
         date/time
