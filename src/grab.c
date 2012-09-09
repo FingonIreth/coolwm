@@ -32,9 +32,11 @@ Bool GrabKeys(Display *display)
 
     XUngrabKey(display, AnyKey, AnyModifier, root);
 
-    KeyCode keycode[] = {XKeysymToKeycode(display, XK_r), XKeysymToKeycode(display, XK_c)};
+    KeyCode keycode[] = {XKeysymToKeycode(display, XK_r),
+                         XKeysymToKeycode(display, XK_c),
+                         XKeysymToKeycode(display, XK_q)};
 
-    for(int k = 0; k < 2; k++)
+    for(int k = 0; k < 3; k++)
     {
         if(!keycode[k])
         {

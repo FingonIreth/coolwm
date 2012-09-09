@@ -22,7 +22,7 @@ void MappingNotifyHandler(Display *display, XEvent *event) {
 }
 
 
-void KeyPressHandler(Display *display, XEvent *xEvent)
+int KeyPressHandler(Display *display, XEvent *xEvent)
 {
     XKeyEvent *xKeyEvent = (XKeyEvent *)xEvent;
 
@@ -45,6 +45,13 @@ void KeyPressHandler(Display *display, XEvent *xEvent)
             }
         }
     }
+    else if((xKeyEvent->state & Mod4Mask) ///XXX like above
+            && (XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0) == XK_q))
+    {
+        return 1;
+    }
+
+    return 0;
 }
 
 int Setup(Display *display)
@@ -65,7 +72,9 @@ void Run(Display *display)
     XEvent xEvent;
 
     XSync(display, False);
-    while(!XNextEvent(display, &xEvent))
+
+    Bool quit = False;
+    while(!quit && !XNextEvent(display, &xEvent))
     {
         switch(xEvent.type)
         {
@@ -75,7 +84,10 @@ void Run(Display *display)
                 break;
             case KeyPress:
                 DLOG("keypress event");
-                KeyPressHandler(display, &xEvent);
+                if(KeyPressHandler(display, &xEvent))
+                {
+                    quit = True;
+                }
                 break;
             case KeyRelease:
                 DLOG("keyrelease event");

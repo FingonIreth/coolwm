@@ -4,3 +4,4 @@ status: useable altough it lacks a lot of features.
 
 super + r - starts dmenu launcher
 super + c - closes active window
+super + q - quit coolwm
