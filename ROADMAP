@@ -1,14 +1,13 @@
 TODO
-    (un)maximizing window
-    fullscreen
-    introduce tags
-    introduce statusbar
-        list of tags with active tag highlighted
-        date/time
-        list of windows per tag
-        tray
-    minimalizing windows
     wallpaper
+    use third party panel
+    introduce tags
     tiling
     configuration file
     make use of xinerama extension (support twinView/xinerama)
+
+PUSHED BACK
+    (un)maximizing window
+    fullscreen
+    minimalizing windows
+    introduce own panel
