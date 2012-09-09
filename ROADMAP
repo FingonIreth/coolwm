@@ -1,0 +1,12 @@
+TODO
+    moving windows
+    resizing windows
+    introduce tags
+    (un)maximizing window
+    introduce statusbar
+        list of tags with active tag highlighted
+        date/time
+        list of windows per tag
+        tray
+    minimalizing windows
+    make use of xinerama extension (support twinView/xinerama)
