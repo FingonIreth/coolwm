@@ -26,6 +26,30 @@ unsigned int NumlockMask(Display *display)
     return numlockMask;
 }
 
+Bool GrabButtons(Display *display)
+{
+    Window root = XDefaultRootWindow(display);
+
+    XUngrabButton(display, AnyButton, AnyModifier, root);
+
+    unsigned int numlockMask = NumlockMask(display);
+    unsigned int modifiers[] = {0, LockMask, numlockMask, numlockMask | LockMask};
+    int modifiersCount = 4;
+    unsigned int buttons[] = {Button1, Button3};
+    int buttonsCount = 2;
+
+    for(int b = 0; b < buttonsCount; ++b)
+    {
+        for(int i = 0; i < modifiersCount; ++i)
+        {
+            XGrabButton(display, buttons[b], Mod4Mask | modifiers[i], root, False,
+                        ButtonPressMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+        }
+    }
+
+    return 0;
+}
+
 Bool GrabKeys(Display *display)
 {
     Window root = XDefaultRootWindow(display);
@@ -34,7 +58,8 @@ Bool GrabKeys(Display *display)
 
     KeyCode keycode[] = {XKeysymToKeycode(display, XK_r),
                          XKeysymToKeycode(display, XK_c),
-                         XKeysymToKeycode(display, XK_q)};
+                         XKeysymToKeycode(display, XK_q)
+                         };
 
     for(int k = 0; k < 3; k++)
     {

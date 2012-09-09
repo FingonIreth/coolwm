@@ -5,5 +5,6 @@
 
 unsigned int NumlockMask(Display *display);
 Bool GrabKeys(Display *display);
+Bool GrabButtons(Display *display);
 
 #endif /* GRAB_H */
