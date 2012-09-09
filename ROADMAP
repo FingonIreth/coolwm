@@ -1,5 +1,4 @@
 TODO
-    create cursor
     moving windows
     resizing windows
     introduce tags
@@ -12,4 +11,5 @@ TODO
     minimalizing windows
     wallpaper
     tiling
+    configuration file
     make use of xinerama extension (support twinView/xinerama)
