@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "handlers.h"
 
+
 int Setup(Display *display, Cursor *cursor)
 {
     signal(SIGCHLD, CatchExitStatus);
@@ -30,17 +31,18 @@ int Setup(Display *display, Cursor *cursor)
     }
 
     Window root = XDefaultRootWindow(display);
-    *cursor = XCreateFontCursor(display, XC_left_ptr);
-    XDefineCursor(display, root, *cursor);
+    cursor[NormalCursor] = XCreateFontCursor(display, XC_left_ptr);
+    cursor[ResizeCursor] = XCreateFontCursor(display, XC_sizing);
+    cursor[MoveCursor] = XCreateFontCursor(display, XC_fleur);
+    XDefineCursor(display, root, cursor[NormalCursor]);
 
     return 0;
 }
 
-void Run(Display *display)
+void Run(Display *display, Cursor *cursors)
 {
     XEvent xEvent;
     MouseGrabInfo mouseGrabInfo = {.isActive = 0};
-
 
     XSync(display, False);
 
@@ -65,11 +67,11 @@ void Run(Display *display)
                 break;
             case ButtonPress:
                 DLOG("pointer button press");
-                MousePressHandler(display, &xEvent, &mouseGrabInfo);
+                MousePressHandler(display, &xEvent, &mouseGrabInfo, cursors);
                 break;
             case ButtonRelease:
                 DLOG("pointer button release");
-                MouseReleaseHandler(display, &xEvent, &mouseGrabInfo);
+                MouseReleaseHandler(display, &xEvent, &mouseGrabInfo, cursors);
                 break;
             case MotionNotify:
                 DLOG("motion notify");
@@ -81,10 +83,17 @@ void Run(Display *display)
     }
 }
 
+void Cleanup(Display *display, Cursor *cursor)
+{
+    XFreeCursor(display, cursor[NormalCursor]);
+    XFreeCursor(display, cursor[ResizeCursor]);
+    XFreeCursor(display, cursor[MoveCursor]);
+}
+
 int main()
 {
     Display *display = XOpenDisplay(NULL);
-    Cursor cursor;
+    Cursor cursors[CursorsCount];
 
     if(!display)
     {
@@ -93,15 +102,16 @@ int main()
         return EXIT_FAILURE;
     }
 
-    if(Setup(display, &cursor))
+    if(Setup(display, cursors))
     {
         DLOG("setup failed.");
         return EXIT_FAILURE;
     }
 
-    Run(display);
+    Run(display, cursors);
 
-    XFreeCursor(display, cursor);
+    Cleanup(display, cursors);
+
     XCloseDisplay(display);
 
     return EXIT_SUCCESS;

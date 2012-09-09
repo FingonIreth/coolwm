@@ -57,7 +57,8 @@ void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGr
     }
 }
 
-void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo)
+void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
+                         Cursor *cursors)
 {
     XButtonEvent *xButtonEvent = (XButtonEvent *)xEvent;
 
@@ -73,7 +74,8 @@ void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseG
     }
 }
 
-void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo)
+void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
+                       Cursor *cursors)
 {
     if(mouseGrabInfo->isActive)
     {
@@ -94,7 +96,8 @@ void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGra
         XGetWindowAttributes(display, xButtonEvent->subwindow, &xWindowAttributes);
         if(XGrabPointer(display, xWindowAttributes.root, False,
                         ButtonPressMask | PointerMotionMask | ButtonReleaseMask,
-                        GrabModeAsync, GrabModeAsync, None, None, CurrentTime) != GrabSuccess)
+                        GrabModeAsync, GrabModeAsync, None, cursors[MoveCursor],
+                        CurrentTime) != GrabSuccess)
         {
             return;
         }
@@ -114,7 +117,8 @@ void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGra
 
         if(XGrabPointer(display, xWindowAttributes.root, False,
                         ButtonPressMask | PointerMotionMask | ButtonReleaseMask,
-                        GrabModeAsync, GrabModeAsync, None, None, CurrentTime) != GrabSuccess)
+                        GrabModeAsync, GrabModeAsync, None, cursors[ResizeCursor],
+                        CurrentTime) != GrabSuccess)
         {
             return;
         }

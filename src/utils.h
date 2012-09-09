@@ -3,6 +3,14 @@
 
 #include <X11/Xlib.h>
 
+enum
+{
+    NormalCursor,
+    ResizeCursor,
+    MoveCursor,
+    CursorsCount
+};
+
 void Spawn(char* command[]);
 
 void CatchExitStatus(int signum);

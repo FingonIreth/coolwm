@@ -17,8 +17,10 @@ typedef struct {
 
 void MappingNotifyHandler(Display *display, XEvent *event);
 void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo);
-void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo);
-void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo);
+void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
+                         Cursor *cursors);
+void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
+                       Cursor *cursors);
 int KeyPressHandler(Display *display, XEvent *xEvent);
 
 #endif /* HANDLERS_H */
