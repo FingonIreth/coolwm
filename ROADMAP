@@ -9,4 +9,6 @@ TODO
         list of windows per tag
         tray
     minimalizing windows
+    wallpaper
+    tiling
     make use of xinerama extension (support twinView/xinerama)
