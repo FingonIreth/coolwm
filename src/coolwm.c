@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <X11/XKBlib.h>
 #include <X11/extensions/Xinerama.h>
+#include <X11/cursorfont.h>
 
 #include "debug.h"
 #include "utils.h"
@@ -54,7 +55,7 @@ int KeyPressHandler(Display *display, XEvent *xEvent)
     return 0;
 }
 
-int Setup(Display *display)
+int Setup(Display *display, Cursor *cursor)
 {
     signal(SIGCHLD, CatchExitStatus);
 
@@ -63,6 +64,11 @@ int Setup(Display *display)
         DLOG("failed to grabKeys.");
         return 1;
     }
+
+    Window root = XDefaultRootWindow(display);
+    *cursor = XCreateFontCursor(display, XC_left_ptr);
+    XDefineCursor(display, root, *cursor);
+
 
     return 0;
 }
@@ -101,6 +107,7 @@ void Run(Display *display)
 int main()
 {
     Display *display = XOpenDisplay(NULL);
+    Cursor cursor;
 
     if(!display)
     {
@@ -109,7 +116,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    if(Setup(display))
+    if(Setup(display, &cursor))
     {
         DLOG("setup failed.");
         return EXIT_FAILURE;
@@ -117,6 +124,7 @@ int main()
 
     Run(display);
 
+    XFreeCursor(display, cursor);
     XCloseDisplay(display);
 
     return EXIT_SUCCESS;
