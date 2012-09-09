@@ -13,7 +13,6 @@
 #include "utils.h"
 #include "handlers.h"
 
-
 int Setup(Display *display, Cursor *cursor)
 {
     signal(SIGCHLD, CatchExitStatus);

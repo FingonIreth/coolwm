@@ -21,7 +21,6 @@ void CatchExitStatus(int signum)
     while(0 < waitpid(-1, NULL, WNOHANG));
 }
 
-
 int SendEvent(Display *display, Window window, Atom protocol)
 {
     int protocolsCount;

@@ -46,7 +46,6 @@ void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGr
             newWindowWidth = minWidth;
         }
 
-
         int newWindowHeight = mouseGrabInfo->windowHeight + yDifference;
         if(newWindowHeight < minHeight)
         {
@@ -139,29 +138,29 @@ int KeyPressHandler(Display *display, XEvent *xEvent)
 {
     XKeyEvent *xKeyEvent = (XKeyEvent *)xEvent;
 
-    if((xKeyEvent->state & Mod4Mask) //XXX bug inviting code
-                                     //no difference between (Mod4Mask | ShiftMask) + r
-                                     //and Mod4Mask + r
-        && (XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0) == XK_r))
+    if(xKeyEvent->state & Mod4Mask)
     {
-        char* command[] = {"dmenu_run", NULL};
-        Spawn(command);
-    }
-    else if((xKeyEvent->state & Mod4Mask) ///XXX like above
-            && (XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0) == XK_c))
-    {
-        if(xKeyEvent->subwindow)
+        KeySym keySym = XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0);
+        if(keySym == XK_r)
         {
-            if(SendEvent(display, xKeyEvent->subwindow, XInternAtom(display, "WM_DELETE_WINDOW", True)))
+            char* command[] = {"dmenu_run", NULL};
+            Spawn(command);
+        }
+        else if (keySym == XK_c)
+        {
+            if(xKeyEvent->subwindow)
             {
-                XKillClient(display, xKeyEvent->subwindow);
+                if(SendEvent(display, xKeyEvent->subwindow,
+                             XInternAtom(display, "WM_DELETE_WINDOW", True)))
+                {
+                    XKillClient(display, xKeyEvent->subwindow);
+                }
             }
         }
-    }
-    else if((xKeyEvent->state & Mod4Mask) ///XXX like above
-            && (XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0) == XK_q))
-    {
-        return 1;
+        else if (keySym == XK_q)
+        {
+            return 1;
+        }
     }
 
     return 0;

@@ -1,4 +1,5 @@
 #include "grab.h"
+#include "utils.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -34,16 +35,15 @@ Bool GrabButtons(Display *display)
 
     unsigned int numlockMask = NumlockMask(display);
     unsigned int modifiers[] = {0, LockMask, numlockMask, numlockMask | LockMask};
-    int modifiersCount = 4;
     unsigned int buttons[] = {Button1, Button3};
-    int buttonsCount = 2;
 
-    for(int b = 0; b < buttonsCount; ++b)
+    for(int b = 0; b < LENGTH(buttons); ++b)
     {
-        for(int i = 0; i < modifiersCount; ++i)
+        for(int i = 0; i < LENGTH(modifiers); ++i)
         {
             XGrabButton(display, buttons[b], Mod4Mask | modifiers[i], root, False,
-                        ButtonPressMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+                        ButtonPressMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
+                        None, None);
         }
     }
 
@@ -61,7 +61,7 @@ Bool GrabKeys(Display *display)
                          XKeysymToKeycode(display, XK_q)
                          };
 
-    for(int k = 0; k < 3; k++)
+    for(int k = 0; k < LENGTH(keycode); k++)
     {
         if(!keycode[k])
         {
@@ -70,8 +70,7 @@ Bool GrabKeys(Display *display)
 
         unsigned int numlockMask = NumlockMask(display);
         unsigned int modifiers[] = {0, LockMask, numlockMask, numlockMask | LockMask};
-        int modifiersCount = 4;
-        for(int i = 0; i < modifiersCount; ++i)
+        for(int i = 0; i < LENGTH(modifiers); ++i)
         {
             XGrabKey(display, keycode[k], Mod4Mask | modifiers[i], root,
                      True, GrabModeAsync, GrabModeAsync);

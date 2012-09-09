@@ -3,6 +3,8 @@
 
 #include <X11/Xlib.h>
 
+#define LENGTH(array) (sizeof(array)/sizeof(array[0]))
+
 enum
 {
     NormalCursor,
