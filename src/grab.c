@@ -58,7 +58,12 @@ Bool GrabKeys(Display *display)
 
     KeyCode keycode[] = {XKeysymToKeycode(display, XK_r),
                          XKeysymToKeycode(display, XK_c),
-                         XKeysymToKeycode(display, XK_q)
+                         XKeysymToKeycode(display, XK_q),
+                         XKeysymToKeycode(display, XK_1),
+                         XKeysymToKeycode(display, XK_2),
+                         XKeysymToKeycode(display, XK_3),
+                         XKeysymToKeycode(display, XK_4),
+                         XKeysymToKeycode(display, XK_5)
                          };
 
     for(int k = 0; k < LENGTH(keycode); k++)

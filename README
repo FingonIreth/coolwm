@@ -5,6 +5,7 @@ status: useable altough it lacks a lot of features.
 super + r - starts dmenu launcher
 super + c - closes active window
 super + q - quit coolwm
+super + 1-5 - change tag (virtual desktop)
 
 super + left mouse button - move window
 super + right mouse button - resize window

@@ -136,7 +136,7 @@ void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGra
     }
 }
 
-int KeyPressHandler(Display *display, XEvent *xEvent)
+int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag)
 {
     XKeyEvent *xKeyEvent = (XKeyEvent *)xEvent;
 
@@ -162,6 +162,26 @@ int KeyPressHandler(Display *display, XEvent *xEvent)
         else if (keySym == XK_q)
         {
             return 1;
+        }
+        else if (keySym == XK_1)
+        {
+            *currentTag = 1;
+        }
+        else if (keySym == XK_2)
+        {
+            *currentTag = 2;
+        }
+        else if (keySym == XK_3)
+        {
+            *currentTag = 3;
+        }
+        else if (keySym == XK_4)
+        {
+            *currentTag = 4;
+        }
+        else if (keySym == XK_5)
+        {
+            *currentTag = 5;
         }
     }
 
@@ -215,6 +235,8 @@ void UnmapNotifyHandler(Display *display, XEvent *xEvent, GSList **windows)
 {
     XDestroyWindowEvent *xDestroyWindowEvent = (XDestroyWindowEvent *)xEvent;
     GSList *window_node = g_slist_find_custom(*windows, &xDestroyWindowEvent->window, compareWindows);
+    //XXX special treatment when unmap is caused by iconify/changing tag?
+    //Change state to withdrawnstate or something
     if(!window_node)
     {
         return;

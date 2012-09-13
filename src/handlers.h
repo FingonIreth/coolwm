@@ -22,7 +22,8 @@ void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseG
                          Cursor *cursors);
 void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
                        Cursor *cursors);
-int KeyPressHandler(Display *display, XEvent *xEvent);
+
+int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag);
 
 void ConfigureRequestHandler(Display *display, XEvent *xEvent);
 

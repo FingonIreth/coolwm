@@ -45,7 +45,7 @@ int Setup(Display *display, Cursor *cursor)
     return 0;
 }
 
-void Run(Display *display, Cursor *cursors, GSList **windows)
+void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
 {
     XEvent xEvent;
     MouseGrabInfo mouseGrabInfo = {.isActive = 0};
@@ -63,7 +63,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows)
                 break;
             case KeyPress:
                 DLOG("keypress event");
-                if(KeyPressHandler(display, &xEvent))
+                if(KeyPressHandler(display, &xEvent, currentTag))
                 {
                     quit = True;
                 }
@@ -123,6 +123,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows)
                 DLOG("event type %d not handled", xEvent.type);
         }
 
+        DLOG("current tag %d", *currentTag);
         DLOG("windows list size %d", g_slist_length(*windows));
     }
 }
@@ -138,6 +139,7 @@ int main()
 {
     Display *display = XOpenDisplay(NULL);
     Cursor cursors[CursorsCount];
+    int currentTag = 1;
 
     GSList *windows = NULL;
     (void)windows;
@@ -155,7 +157,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    Run(display, cursors, &windows);
+    Run(display, cursors, &windows, &currentTag);
 
     Cleanup(display, cursors);
 
