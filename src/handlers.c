@@ -1,9 +1,11 @@
 #include <X11/XKBlib.h>
 #include <X11/keysym.h>
+#include <stdlib.h>
 
 #include "handlers.h"
 #include "grab.h"
 #include "utils.h"
+#include "debug.h"
 
 void MappingNotifyHandler(Display *display, XEvent *event)
 {
@@ -164,4 +166,61 @@ int KeyPressHandler(Display *display, XEvent *xEvent)
     }
 
     return 0;
+}
+
+void ConfigureRequestHandler(Display *display, XEvent *xEvent)
+{
+    XConfigureRequestEvent *xConfigureReuqestEvent = (XConfigureRequestEvent *)xEvent;
+
+    XWindowChanges xWindowChanges;
+    xWindowChanges.x = xConfigureReuqestEvent->x;
+    xWindowChanges.y = xConfigureReuqestEvent->y;
+    xWindowChanges.width = xConfigureReuqestEvent->width;
+    xWindowChanges.height= xConfigureReuqestEvent->height;
+    xWindowChanges.border_width = xConfigureReuqestEvent->border_width;
+    xWindowChanges.sibling = xConfigureReuqestEvent->above;
+    xWindowChanges.stack_mode = xConfigureReuqestEvent->detail;
+
+    XConfigureWindow(display, xConfigureReuqestEvent->window,
+                     xConfigureReuqestEvent->value_mask, &xWindowChanges);
+}
+
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows)
+{
+    XMapRequestEvent *xMapRequestEvent = (XMapRequestEvent *)xEvent;
+    XWindowAttributes xWindowAttributes;
+
+    if(!XGetWindowAttributes(display, xMapRequestEvent->window, &xWindowAttributes))
+    {
+        return;
+    }
+
+    if(xWindowAttributes.override_redirect)
+    {
+        return;
+    }
+
+    Window *window = (Window *)malloc(sizeof(xMapRequestEvent->window));
+    *window = xMapRequestEvent->window;
+    Window root = XDefaultRootWindow(display);
+    if(xMapRequestEvent->parent == root && !g_slist_find_custom(*windows, window, compareWindows))
+    {
+        *windows = g_slist_prepend(*windows, (gpointer)window);
+    }
+
+    XMapWindow(display, xMapRequestEvent->window);
+}
+
+void UnmapNotifyHandler(Display *display, XEvent *xEvent, GSList **windows)
+{
+    XDestroyWindowEvent *xDestroyWindowEvent = (XDestroyWindowEvent *)xEvent;
+    GSList *window_node = g_slist_find_custom(*windows, &xDestroyWindowEvent->window, compareWindows);
+    if(!window_node)
+    {
+        return;
+    }
+
+    Window *window = window_node->data;
+    *windows = g_slist_remove(*windows, window_node->data);
+    free(window);
 }

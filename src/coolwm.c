@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <X11/extensions/Xinerama.h>
 #include <X11/cursorfont.h>
+#include <glib.h>
 
 #include "debug.h"
 #include "grab.h"
@@ -35,10 +36,16 @@ int Setup(Display *display, Cursor *cursor)
     cursor[MoveCursor] = XCreateFontCursor(display, XC_fleur);
     XDefineCursor(display, root, cursor[NormalCursor]);
 
+    XSetWindowAttributes rootAttributes;
+    rootAttributes.event_mask = SubstructureNotifyMask | SubstructureRedirectMask;
+    XChangeWindowAttributes(display, root, CWEventMask, &rootAttributes);
+
+    XSelectInput(display, root, rootAttributes.event_mask);
+
     return 0;
 }
 
-void Run(Display *display, Cursor *cursors)
+void Run(Display *display, Cursor *cursors, GSList **windows)
 {
     XEvent xEvent;
     MouseGrabInfo mouseGrabInfo = {.isActive = 0};
@@ -76,9 +83,47 @@ void Run(Display *display, Cursor *cursors)
                 DLOG("motion notify");
                 MouseMotionHandler(display, &xEvent, &mouseGrabInfo);
                 break;
+            case MapNotify:
+                DLOG("map notify");
+                break;
+            case UnmapNotify:
+                DLOG("unmap notify");
+                UnmapNotifyHandler(display, &xEvent, windows);
+                break;
+            case CirculateNotify:
+                DLOG("circulate notify");
+                break;
+            case ConfigureNotify:
+                DLOG("configure notify");
+                break;
+            case CreateNotify:
+                DLOG("create notify");
+                break;
+            case DestroyNotify:
+                DLOG("destroy notify");
+                break;
+            case GravityNotify:
+                DLOG("gravity notify");
+                break;
+            case ReparentNotify:
+                DLOG("reparent notify");
+                break;
+            case CirculateRequest:
+                DLOG("circulate request");
+                break;
+            case ConfigureRequest:
+                DLOG("configure request");
+                ConfigureRequestHandler(display, &xEvent);
+                break;
+            case MapRequest:
+                DLOG("map request");
+                MapRequestHandler(display, &xEvent, windows);
+                break;
             default:
                 DLOG("event type %d not handled", xEvent.type);
         }
+
+        DLOG("windows list size %d", g_slist_length(*windows));
     }
 }
 
@@ -94,6 +139,9 @@ int main()
     Display *display = XOpenDisplay(NULL);
     Cursor cursors[CursorsCount];
 
+    GSList *windows = NULL;
+    (void)windows;
+
     if(!display)
     {
         DLOG("failed to open display.");
@@ -107,7 +155,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    Run(display, cursors);
+    Run(display, cursors, &windows);
 
     Cleanup(display, cursors);
 

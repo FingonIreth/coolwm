@@ -1,5 +1,5 @@
 FLAGS = -Wall -Wformat -std=gnu99 -g3
-LIBS = -lX11 -lXinerama
+LIBS = -lX11 -lXinerama `pkg-config --cflags --libs glib-2.0`
 SRC_DIR = src
 
 all: coolwm

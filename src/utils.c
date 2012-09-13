@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <X11/Xlib.h>
+#include <glib.h>
 
 void Spawn(char* command[])
 {
@@ -50,4 +51,9 @@ int SendEvent(Display *display, Window window, Atom protocol)
     }
 
     return !foundProtocol;
+}
+
+gint compareWindows(gconstpointer a, gconstpointer b)
+{
+    return *((Window *) a) == *((Window *) b) ? 0 : 1;
 }

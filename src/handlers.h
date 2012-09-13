@@ -2,6 +2,7 @@
 #define HANDLERS_H
 
 #include <X11/Xlib.h>
+#include <glib.h>
 
 typedef struct {
     int isActive;
@@ -22,5 +23,11 @@ void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseG
 void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
                        Cursor *cursors);
 int KeyPressHandler(Display *display, XEvent *xEvent);
+
+void ConfigureRequestHandler(Display *display, XEvent *xEvent);
+
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows);
+
+void UnmapNotifyHandler(Display *display, XEvent *xEvent, GSList **windows);
 
 #endif /* HANDLERS_H */
