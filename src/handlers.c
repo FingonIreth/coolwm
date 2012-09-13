@@ -136,7 +136,7 @@ void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGra
     }
 }
 
-int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag)
+int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag, GSList *windows)
 {
     XKeyEvent *xKeyEvent = (XKeyEvent *)xEvent;
 
@@ -165,23 +165,23 @@ int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag)
         }
         else if (keySym == XK_1)
         {
-            *currentTag = 1;
+            changeTag(currentTag, 1, windows, display);
         }
         else if (keySym == XK_2)
         {
-            *currentTag = 2;
+            changeTag(currentTag, 2, windows, display);
         }
         else if (keySym == XK_3)
         {
-            *currentTag = 3;
+            changeTag(currentTag, 3, windows, display);
         }
         else if (keySym == XK_4)
         {
-            *currentTag = 4;
+            changeTag(currentTag, 4, windows, display);
         }
         else if (keySym == XK_5)
         {
-            *currentTag = 5;
+            changeTag(currentTag, 5, windows, display);
         }
     }
 
@@ -205,7 +205,7 @@ void ConfigureRequestHandler(Display *display, XEvent *xEvent)
                      xConfigureReuqestEvent->value_mask, &xWindowChanges);
 }
 
-void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows)
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, int *currentTag)
 {
     XMapRequestEvent *xMapRequestEvent = (XMapRequestEvent *)xEvent;
     XWindowAttributes xWindowAttributes;
@@ -220,29 +220,30 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows)
         return;
     }
 
-    Window *window = (Window *)malloc(sizeof(xMapRequestEvent->window));
-    *window = xMapRequestEvent->window;
+    Client *client= (Client *)malloc(sizeof(xMapRequestEvent->window));
+    client->window= xMapRequestEvent->window;
+    client->tag = *currentTag;
     Window root = XDefaultRootWindow(display);
-    if(xMapRequestEvent->parent == root && !g_slist_find_custom(*windows, window, compareWindows))
+    if(xMapRequestEvent->parent == root && !g_slist_find_custom(*windows, client, compareWindows))
     {
-        *windows = g_slist_prepend(*windows, (gpointer)window);
+        *windows = g_slist_prepend(*windows, (gpointer)client);
     }
 
     XMapWindow(display, xMapRequestEvent->window);
 }
 
-void UnmapNotifyHandler(Display *display, XEvent *xEvent, GSList **windows)
+void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, int *currentTag)
 {
     XDestroyWindowEvent *xDestroyWindowEvent = (XDestroyWindowEvent *)xEvent;
-    GSList *window_node = g_slist_find_custom(*windows, &xDestroyWindowEvent->window, compareWindows);
+    GSList *client_node = g_slist_find_custom(*windows, &xDestroyWindowEvent->window, compareWindows);
     //XXX special treatment when unmap is caused by iconify/changing tag?
     //Change state to withdrawnstate or something
-    if(!window_node)
+    if(!client_node)
     {
         return;
     }
 
-    Window *window = window_node->data;
-    *windows = g_slist_remove(*windows, window_node->data);
-    free(window);
+    Client *client = client_node->data;
+    *windows = g_slist_remove(*windows, client_node->data);
+    free(client);
 }

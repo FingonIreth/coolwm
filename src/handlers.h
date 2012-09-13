@@ -23,12 +23,14 @@ void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseG
 void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
                        Cursor *cursors);
 
-int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag);
+int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag, GSList *windows);
 
 void ConfigureRequestHandler(Display *display, XEvent *xEvent);
 
-void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows);
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, int *currentTag);
 
-void UnmapNotifyHandler(Display *display, XEvent *xEvent, GSList **windows);
+void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, int *currentTag);
+
+
 
 #endif /* HANDLERS_H */

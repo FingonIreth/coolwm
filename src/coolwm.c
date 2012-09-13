@@ -14,6 +14,7 @@
 #include "utils.h"
 #include "handlers.h"
 
+
 int Setup(Display *display, Cursor *cursor)
 {
     signal(SIGCHLD, CatchExitStatus);
@@ -63,7 +64,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
                 break;
             case KeyPress:
                 DLOG("keypress event");
-                if(KeyPressHandler(display, &xEvent, currentTag))
+                if(KeyPressHandler(display, &xEvent, currentTag, *windows))
                 {
                     quit = True;
                 }
@@ -88,7 +89,6 @@ void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
                 break;
             case UnmapNotify:
                 DLOG("unmap notify");
-                UnmapNotifyHandler(display, &xEvent, windows);
                 break;
             case CirculateNotify:
                 DLOG("circulate notify");
@@ -101,6 +101,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
                 break;
             case DestroyNotify:
                 DLOG("destroy notify");
+                DestroyNotifyHandler(display, &xEvent, windows, currentTag);
                 break;
             case GravityNotify:
                 DLOG("gravity notify");
@@ -117,7 +118,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
                 break;
             case MapRequest:
                 DLOG("map request");
-                MapRequestHandler(display, &xEvent, windows);
+                MapRequestHandler(display, &xEvent, windows, currentTag);
                 break;
             default:
                 DLOG("event type %d not handled", xEvent.type);

@@ -7,6 +7,8 @@
 #include <X11/Xlib.h>
 #include <glib.h>
 
+#include "debug.h"
+
 void Spawn(char* command[])
 {
     if(fork() == 0)
@@ -56,4 +58,27 @@ int SendEvent(Display *display, Window window, Atom protocol)
 gint compareWindows(gconstpointer a, gconstpointer b)
 {
     return *((Window *) a) == *((Window *) b) ? 0 : 1;
+}
+
+
+void changeTag(int *currentTag, int targetTag, GSList *windows, Display *display)
+{
+    *currentTag = targetTag;
+    GSList *window_iterator = windows;
+    while(window_iterator)
+    {
+        Client *client = (Client *) window_iterator->data;
+        if(client->tag == targetTag)
+        {
+            DLOG("show window");
+            XMapWindow(display, client->window);
+        }
+        else
+        {
+            DLOG("hide window");
+            XUnmapWindow(display, client->window);
+        }
+
+        window_iterator = window_iterator->next;
+    }
 }
