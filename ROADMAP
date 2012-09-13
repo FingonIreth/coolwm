@@ -1,7 +1,5 @@
 TODO
-    wallpaper
     use third party panel
-    introduce tags
     tiling
     configuration file
     make use of xinerama extension (support twinView/xinerama)
@@ -11,3 +9,4 @@ PUSHED BACK
     fullscreen
     minimalizing windows
     introduce own panel
+    wallpaper
