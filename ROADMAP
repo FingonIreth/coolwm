@@ -1,13 +1,13 @@
 TODO
-    wallpaper
-    use third party panel
-    introduce tags
-    tiling
-    configuration file
+    simple tiling layout
     make use of xinerama extension (support twinView/xinerama)
-
-PUSHED BACK
     (un)maximizing window
     fullscreen
+    use third party panel
+    configuration file
+
+PUSHED BACK
     minimalizing windows
     introduce own panel
+    wallpaper
+    cool tiling
