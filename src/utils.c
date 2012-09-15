@@ -110,3 +110,34 @@ ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount, int sc
 
     return NULL;
 }
+
+void TileScreen(Display *display, GSList *windows, ScreenInfo *screen, int tag)
+{
+    int windowCount = 0;
+    GSList *windowIterator = windows;
+    while(windowIterator)
+    {
+        Client *client = (Client *) windowIterator->data;
+        if(client->screenNumber == screen->screenNumber && client->tag == tag)
+        {
+            windowCount += 1;
+        }
+
+        windowIterator = windowIterator->next;
+    }
+
+    windowIterator = windows;
+    int windowX = 0;
+    while(windowIterator)
+    {
+        Client *client = (Client *) windowIterator->data;
+        if(client->screenNumber == screen->screenNumber && client->tag == tag)
+        {
+            XMoveResizeWindow(display, client->window, windowX, screen->x + 0, screen->y + screen->width/windowCount, screen->height);
+            windowX += screen->width/windowCount;
+        }
+
+        windowIterator = windowIterator->next;
+    }
+
+}

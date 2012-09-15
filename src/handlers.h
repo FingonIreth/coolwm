@@ -30,6 +30,6 @@ void ConfigureRequestHandler(Display *display, XEvent *xEvent);
 
 void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount);
 
-void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows);
+void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount);
 
 #endif /* HANDLERS_H */

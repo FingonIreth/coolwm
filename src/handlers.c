@@ -235,10 +235,12 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, Scree
         *windows = g_slist_prepend(*windows, (gpointer)client);
     }
 
+    TileScreen(display, *windows, screen, screen->currentTag);
+
     XMapWindow(display, xMapRequestEvent->window);
 }
 
-void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows)
+void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount)
 {
     XDestroyWindowEvent *xDestroyWindowEvent = (XDestroyWindowEvent *)xEvent;
     GSList *client_node = g_slist_find_custom(*windows, &xDestroyWindowEvent->window, compareWindows);
@@ -249,5 +251,7 @@ void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows)
 
     Client *client = client_node->data;
     *windows = g_slist_remove(*windows, client_node->data);
+    ScreenInfo *screen = ScreenNumberToScreen(screenInfo, screenCount, client->screenNumber);
+    TileScreen(display, *windows, screen, client->tag);
     free(client);
 }

@@ -135,7 +135,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **scree
                 break;
             case DestroyNotify:
                 DLOG("destroy notify");
-                DestroyNotifyHandler(display, &xEvent, windows);
+                DestroyNotifyHandler(display, &xEvent, windows, *screenInfo, *screenCount);
                 break;
             case GravityNotify:
                 DLOG("gravity notify");

@@ -45,4 +45,6 @@ int PointToScreenNumber(ScreenInfo *screenInfo, int *screenCount, int x, int y);
 
 ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount, int screenNumber);
 
+void TileScreen(Display *display, GSList *windows, ScreenInfo *screen, int tag);
+
 #endif /* UTILS_H */
