@@ -1,6 +1,5 @@
 TODO
     simple tiling layout
-    make use of xinerama extension (support twinView/xinerama)
     (un)maximizing window
     fullscreen
     use third party panel
