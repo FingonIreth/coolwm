@@ -15,9 +15,43 @@
 #include "handlers.h"
 
 
-int Setup(Display *display, Cursor *cursor)
+int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screenCount)
 {
     signal(SIGCHLD, CatchExitStatus);
+
+    if(XineramaIsActive(display))
+    {
+        DLOG("xinerma is on");
+        XineramaScreenInfo *xineramaScreenInfo;
+        xineramaScreenInfo = XineramaQueryScreens(display, screenCount);
+        *screenInfo = malloc(sizeof(ScreenInfo) * (*screenCount));
+        for(int i = 0; i < *screenCount; ++i)
+        {
+            (*screenInfo)[i].screenNumber = xineramaScreenInfo[i].screen_number;
+            (*screenInfo)[i].x = xineramaScreenInfo[i].x_org;
+            (*screenInfo)[i].y = xineramaScreenInfo[i].y_org;
+            (*screenInfo)[i].width = xineramaScreenInfo[i].width;
+            (*screenInfo)[i].height = xineramaScreenInfo[i].height;
+        }
+        XFree(xineramaScreenInfo);
+    }
+    else
+    {
+        DLOG("xinerma is off");
+        *screenCount = 1;
+        *screenInfo = malloc(sizeof(ScreenInfo));
+        (*screenInfo)->screenNumber = XDefaultScreen(display);
+        Screen *screen = XScreenOfDisplay(display, (*screenInfo)->screenNumber);
+        (*screenInfo)->x = 0;
+        (*screenInfo)->y = 0;
+        (*screenInfo)->width = XWidthOfScreen(screen);
+        (*screenInfo)->height = XHeightOfScreen(screen);
+    }
+
+    for(int i = 0; i < *screenCount; ++i)
+    {
+        (*screenInfo)[i].currentTag = 1;
+    }
 
     if(GrabKeys(display))
     {
@@ -46,7 +80,7 @@ int Setup(Display *display, Cursor *cursor)
     return 0;
 }
 
-void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
+void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **screenInfo, int *screenCount)
 {
     XEvent xEvent;
     MouseGrabInfo mouseGrabInfo = {.isActive = 0};
@@ -64,7 +98,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
                 break;
             case KeyPress:
                 DLOG("keypress event");
-                if(KeyPressHandler(display, &xEvent, currentTag, *windows))
+                if(KeyPressHandler(display, &xEvent, *windows, *screenInfo, screenCount))
                 {
                     quit = True;
                 }
@@ -82,7 +116,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
                 break;
             case MotionNotify:
                 DLOG("motion notify");
-                MouseMotionHandler(display, &xEvent, &mouseGrabInfo);
+                MouseMotionHandler(display, &xEvent, &mouseGrabInfo, *screenInfo, *screenCount, *windows);
                 break;
             case MapNotify:
                 DLOG("map notify");
@@ -101,7 +135,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
                 break;
             case DestroyNotify:
                 DLOG("destroy notify");
-                DestroyNotifyHandler(display, &xEvent, windows, currentTag);
+                DestroyNotifyHandler(display, &xEvent, windows);
                 break;
             case GravityNotify:
                 DLOG("gravity notify");
@@ -118,13 +152,21 @@ void Run(Display *display, Cursor *cursors, GSList **windows, int *currentTag)
                 break;
             case MapRequest:
                 DLOG("map request");
-                MapRequestHandler(display, &xEvent, windows, currentTag);
+                MapRequestHandler(display, &xEvent, windows, *screenInfo, *screenCount);
                 break;
             default:
                 DLOG("event type %d not handled", xEvent.type);
         }
 
-        DLOG("current tag %d", *currentTag);
+        GSList *windowIterator = *windows;
+        while(windowIterator)
+        {
+            Client *client = (Client *) windowIterator->data;
+            DLOG("window screen: %d; tag: %d", client->screenNumber, client->tag);
+
+            windowIterator = windowIterator->next;
+        }
+
         DLOG("windows list size %d", g_slist_length(*windows));
     }
 }
@@ -140,7 +182,6 @@ int main()
 {
     Display *display = XOpenDisplay(NULL);
     Cursor cursors[CursorsCount];
-    int currentTag = 1;
 
     GSList *windows = NULL;
     (void)windows;
@@ -152,13 +193,15 @@ int main()
         return EXIT_FAILURE;
     }
 
-    if(Setup(display, cursors))
+    ScreenInfo *screenInfo = NULL;
+    int screenCount = 0;
+    if(Setup(display, cursors, &screenInfo, &screenCount))
     {
         DLOG("setup failed.");
         return EXIT_FAILURE;
     }
 
-    Run(display, cursors, &windows, &currentTag);
+    Run(display, cursors, &windows, &screenInfo, &screenCount);
 
     Cleanup(display, cursors);
 

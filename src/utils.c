@@ -57,23 +57,23 @@ int SendEvent(Display *display, Window window, Atom protocol)
 
 gint compareWindows(gconstpointer a, gconstpointer b)
 {
-    return *((Window *) a) == *((Window *) b) ? 0 : 1;
+    return ((Client*) a)->window == ((Client*) b)->window ? 0 : 1;
 }
 
 
-void changeTag(int *currentTag, int targetTag, GSList *windows, Display *display)
+void changeTag(ScreenInfo *screen, int targetTag, GSList *windows, Display *display)
 {
-    *currentTag = targetTag;
+    screen->currentTag = targetTag;
     GSList *window_iterator = windows;
     while(window_iterator)
     {
         Client *client = (Client *) window_iterator->data;
-        if(client->tag == targetTag)
+        if(client->tag == targetTag && client->screenNumber == screen->screenNumber)
         {
             DLOG("show window");
             XMapWindow(display, client->window);
         }
-        else
+        else if(client->screenNumber == screen->screenNumber)
         {
             DLOG("hide window");
             XUnmapWindow(display, client->window);
@@ -81,4 +81,32 @@ void changeTag(int *currentTag, int targetTag, GSList *windows, Display *display
 
         window_iterator = window_iterator->next;
     }
+}
+
+//XXX wrong and not robust
+int PointToScreenNumber(ScreenInfo *screenInfo, int *screenCount, int x, int y)
+{
+    for(int i = 0; i < *screenCount; ++i)
+    {
+        if(screenInfo[i].x <= x && x <= screenInfo[i].x + screenInfo[i].width
+           && screenInfo[i].y <= y && y <= screenInfo[i].y + screenInfo[i].height)
+        {
+            return screenInfo[i].screenNumber;
+        }
+    }
+
+    return -1;
+}
+
+ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount, int screenNumber)
+{
+    for(int i = 0; i < screenCount; ++i)
+    {
+        if(screenInfo[i].screenNumber == screenNumber)
+        {
+            return screenInfo + i;
+        }
+    }
+
+    return NULL;
 }

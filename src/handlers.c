@@ -16,7 +16,7 @@ void MappingNotifyHandler(Display *display, XEvent *event)
         GrabKeys(display);
 }
 
-void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo)
+void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo, int screenCount, GSList *windows)
 {
     XMotionEvent *xMotionEvent = (XMotionEvent *)xEvent;
     if(!mouseGrabInfo->isActive)
@@ -33,6 +33,16 @@ void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGr
         int newWindowY = mouseGrabInfo->windowY + yDifference;
 
         XMoveWindow(display, mouseGrabInfo->draggedWindow, newWindowX, newWindowY);
+        int screenNumber = PointToScreenNumber(screenInfo, &screenCount, newWindowX, newWindowY);
+        Client client = {.window = mouseGrabInfo->draggedWindow};
+        GSList *clientNode = g_slist_find_custom(windows, &client, compareWindows);
+        if(clientNode)
+        {
+            ScreenInfo *screen = ScreenNumberToScreen(screenInfo, screenCount, screenNumber);
+            Client *client = (Client *) clientNode->data;
+            client->screenNumber = screen->screenNumber;
+            client->tag= screen->currentTag;
+        }
     }
     else if(mouseGrabInfo->dragButton == Button3)
     {
@@ -136,7 +146,7 @@ void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGra
     }
 }
 
-int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag, GSList *windows)
+int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInfo *screenInfo, int *screenCount)
 {
     XKeyEvent *xKeyEvent = (XKeyEvent *)xEvent;
 
@@ -163,25 +173,17 @@ int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag, GSList *w
         {
             return 1;
         }
-        else if (keySym == XK_1)
+
+        KeySym tagDigits[] = {XK_1, XK_2, XK_3, XK_4, XK_5};
+
+        for(int i = 0; i < LENGTH(tagDigits); ++i)
         {
-            changeTag(currentTag, 1, windows, display);
-        }
-        else if (keySym == XK_2)
-        {
-            changeTag(currentTag, 2, windows, display);
-        }
-        else if (keySym == XK_3)
-        {
-            changeTag(currentTag, 3, windows, display);
-        }
-        else if (keySym == XK_4)
-        {
-            changeTag(currentTag, 4, windows, display);
-        }
-        else if (keySym == XK_5)
-        {
-            changeTag(currentTag, 5, windows, display);
+            if (keySym == tagDigits[i])
+            {
+                int screenNumber = PointToScreenNumber(screenInfo, screenCount, xKeyEvent->x, xKeyEvent->y);
+                ScreenInfo *screen = ScreenNumberToScreen(screenInfo, *screenCount, screenNumber);
+                changeTag(screen, i + 1, windows, display);
+            }
         }
     }
 
@@ -190,6 +192,7 @@ int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag, GSList *w
 
 void ConfigureRequestHandler(Display *display, XEvent *xEvent)
 {
+    //TODO better handling - tiling/floating, screen change
     XConfigureRequestEvent *xConfigureReuqestEvent = (XConfigureRequestEvent *)xEvent;
 
     XWindowChanges xWindowChanges;
@@ -205,7 +208,7 @@ void ConfigureRequestHandler(Display *display, XEvent *xEvent)
                      xConfigureReuqestEvent->value_mask, &xWindowChanges);
 }
 
-void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, int *currentTag)
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount)
 {
     XMapRequestEvent *xMapRequestEvent = (XMapRequestEvent *)xEvent;
     XWindowAttributes xWindowAttributes;
@@ -220,9 +223,12 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, int *
         return;
     }
 
-    Client *client= (Client *)malloc(sizeof(xMapRequestEvent->window));
+    Client *client= (Client *)malloc(sizeof(Client));
     client->window= xMapRequestEvent->window;
-    client->tag = *currentTag;
+    client->screenNumber = PointToScreenNumber(screenInfo, &screenCount, xWindowAttributes.x, xWindowAttributes.y);
+    ScreenInfo *screen = ScreenNumberToScreen(screenInfo, screenCount, client->screenNumber);
+    client->tag = screen->currentTag;
+
     Window root = XDefaultRootWindow(display);
     if(xMapRequestEvent->parent == root && !g_slist_find_custom(*windows, client, compareWindows))
     {
@@ -232,12 +238,10 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, int *
     XMapWindow(display, xMapRequestEvent->window);
 }
 
-void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, int *currentTag)
+void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows)
 {
     XDestroyWindowEvent *xDestroyWindowEvent = (XDestroyWindowEvent *)xEvent;
     GSList *client_node = g_slist_find_custom(*windows, &xDestroyWindowEvent->window, compareWindows);
-    //XXX special treatment when unmap is caused by iconify/changing tag?
-    //Change state to withdrawnstate or something
     if(!client_node)
     {
         return;

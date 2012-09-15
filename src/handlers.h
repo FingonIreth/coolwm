@@ -3,6 +3,7 @@
 
 #include <X11/Xlib.h>
 #include <glib.h>
+#include "utils.h"
 
 typedef struct {
     int isActive;
@@ -17,20 +18,18 @@ typedef struct {
 } MouseGrabInfo;
 
 void MappingNotifyHandler(Display *display, XEvent *event);
-void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo);
+void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo, int screenCount, GSList *windows);
 void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
                          Cursor *cursors);
 void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
                        Cursor *cursors);
 
-int KeyPressHandler(Display *display, XEvent *xEvent, int *currentTag, GSList *windows);
+int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInfo *screenInfo, int *screenCount);
 
 void ConfigureRequestHandler(Display *display, XEvent *xEvent);
 
-void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, int *currentTag);
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount);
 
-void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, int *currentTag);
-
-
+void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows);
 
 #endif /* HANDLERS_H */

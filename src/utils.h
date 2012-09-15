@@ -10,8 +10,18 @@ typedef struct
 {
     Window window;
     int tag;
-
+    int screenNumber;
 } Client;
+
+typedef struct
+{
+    int screenNumber;
+    int x;
+    int y;
+    int width;
+    int height;
+    int currentTag;
+} ScreenInfo;
 
 enum
 {
@@ -29,7 +39,10 @@ int SendEvent(Display *display, Window window, Atom protocol);
 
 gint compareWindows(gconstpointer a, gconstpointer b);
 
-void changeTag(int *currentTag, int targetTag, GSList *windows, Display *display);
+void changeTag(ScreenInfo *screen, int targetTag, GSList *windows, Display *display);
 
+int PointToScreenNumber(ScreenInfo *screenInfo, int *screenCount, int x, int y);
+
+ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount, int screenNumber);
 
 #endif /* UTILS_H */
