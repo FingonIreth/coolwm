@@ -16,9 +16,14 @@ void MappingNotifyHandler(Display *display, XEvent *event)
         GrabKeys(display);
 }
 
-void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo, int screenCount, GSList *windows)
+void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo, int screenCount, GSList *windows, int *currentScreenNumber)
 {
     XMotionEvent *xMotionEvent = (XMotionEvent *)xEvent;
+
+    *currentScreenNumber = PointToScreenNumber(screenInfo, &screenCount, xMotionEvent->x, xMotionEvent->y);
+
+    DLOG("currentScreenNumber %d", *currentScreenNumber);
+
     if(!mouseGrabInfo->isActive)
     {
         return;
@@ -193,22 +198,22 @@ int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInf
 void ConfigureRequestHandler(Display *display, XEvent *xEvent)
 {
     //TODO better handling - tiling/floating, screen change
-    XConfigureRequestEvent *xConfigureReuqestEvent = (XConfigureRequestEvent *)xEvent;
-
+    XConfigureRequestEvent *xConfigureRequestEvent = (XConfigureRequestEvent *)xEvent;
+    DLOG("x %d, y %d", xConfigureRequestEvent->x, xConfigureRequestEvent->y);
     XWindowChanges xWindowChanges;
-    xWindowChanges.x = xConfigureReuqestEvent->x;
-    xWindowChanges.y = xConfigureReuqestEvent->y;
-    xWindowChanges.width = xConfigureReuqestEvent->width;
-    xWindowChanges.height= xConfigureReuqestEvent->height;
-    xWindowChanges.border_width = xConfigureReuqestEvent->border_width;
-    xWindowChanges.sibling = xConfigureReuqestEvent->above;
-    xWindowChanges.stack_mode = xConfigureReuqestEvent->detail;
+    xWindowChanges.x = xConfigureRequestEvent->x;
+    xWindowChanges.y = xConfigureRequestEvent->y;
+    xWindowChanges.width = xConfigureRequestEvent->width;
+    xWindowChanges.height= xConfigureRequestEvent->height;
+    xWindowChanges.border_width = xConfigureRequestEvent->border_width;
+    xWindowChanges.sibling = xConfigureRequestEvent->above;
+    xWindowChanges.stack_mode = xConfigureRequestEvent->detail;
 
-    XConfigureWindow(display, xConfigureReuqestEvent->window,
-                     xConfigureReuqestEvent->value_mask, &xWindowChanges);
+    XConfigureWindow(display, xConfigureRequestEvent->window,
+                     xConfigureRequestEvent->value_mask, &xWindowChanges);
 }
 
-void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount)
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount, int currentScreenNumber)
 {
     XMapRequestEvent *xMapRequestEvent = (XMapRequestEvent *)xEvent;
     XWindowAttributes xWindowAttributes;
@@ -222,12 +227,12 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, Scree
     {
         return;
     }
-
-    Client *client= (Client *)malloc(sizeof(Client));
-    client->window= xMapRequestEvent->window;
-    client->screenNumber = PointToScreenNumber(screenInfo, &screenCount, xWindowAttributes.x, xWindowAttributes.y);
-    ScreenInfo *screen = ScreenNumberToScreen(screenInfo, screenCount, client->screenNumber);
-    client->tag = screen->currentTag;
+    ScreenInfo *currentScreen = ScreenNumberToScreen(screenInfo, screenCount, currentScreenNumber);
+    Client *client = (Client *)malloc(sizeof(Client));
+    client->window = xMapRequestEvent->window;
+    client->screenNumber = currentScreen->screenNumber;
+    client->tag = currentScreen->currentTag;
+    XMoveWindow(display, client->window, currentScreen->x, currentScreen->y);
 
     Window root = XDefaultRootWindow(display);
     if(xMapRequestEvent->parent == root && !g_slist_find_custom(*windows, client, compareWindows))
@@ -235,8 +240,9 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, Scree
         *windows = g_slist_prepend(*windows, (gpointer)client);
     }
 
-    TileScreen(display, *windows, screen, screen->currentTag);
+    TileScreen(display, *windows, currentScreen, currentScreen->currentTag);
 
+    DLOG("border width %d", xWindowAttributes.border_width);
     XMapWindow(display, xMapRequestEvent->window);
 }
 

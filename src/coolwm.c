@@ -15,7 +15,7 @@
 #include "handlers.h"
 
 
-int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screenCount)
+int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screenCount, int *currentScreenNumber)
 {
     signal(SIGCHLD, CatchExitStatus);
 
@@ -32,6 +32,8 @@ int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screen
             (*screenInfo)[i].y = xineramaScreenInfo[i].y_org;
             (*screenInfo)[i].width = xineramaScreenInfo[i].width;
             (*screenInfo)[i].height = xineramaScreenInfo[i].height;
+            DLOG("screen number %d; x %d;  y %d; w %d; h %d;", xineramaScreenInfo[i].screen_number,
+                 xineramaScreenInfo[i].x_org, xineramaScreenInfo[i].y_org, xineramaScreenInfo[i].width, xineramaScreenInfo[i].height);
         }
         XFree(xineramaScreenInfo);
     }
@@ -47,6 +49,8 @@ int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screen
         (*screenInfo)->width = XWidthOfScreen(screen);
         (*screenInfo)->height = XHeightOfScreen(screen);
     }
+
+    *currentScreenNumber = (*screenInfo)->screenNumber;
 
     for(int i = 0; i < *screenCount; ++i)
     {
@@ -72,7 +76,7 @@ int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screen
     XDefineCursor(display, root, cursor[NormalCursor]);
 
     XSetWindowAttributes rootAttributes;
-    rootAttributes.event_mask = SubstructureNotifyMask | SubstructureRedirectMask;
+    rootAttributes.event_mask = SubstructureNotifyMask | SubstructureRedirectMask | PointerMotionMask;
     XChangeWindowAttributes(display, root, CWEventMask, &rootAttributes);
 
     XSelectInput(display, root, rootAttributes.event_mask);
@@ -80,7 +84,7 @@ int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screen
     return 0;
 }
 
-void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **screenInfo, int *screenCount)
+void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **screenInfo, int *screenCount, int *currentScreenNumber)
 {
     XEvent xEvent;
     MouseGrabInfo mouseGrabInfo = {.isActive = 0};
@@ -116,7 +120,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **scree
                 break;
             case MotionNotify:
                 DLOG("motion notify");
-                MouseMotionHandler(display, &xEvent, &mouseGrabInfo, *screenInfo, *screenCount, *windows);
+                MouseMotionHandler(display, &xEvent, &mouseGrabInfo, *screenInfo, *screenCount, *windows, currentScreenNumber);
                 break;
             case MapNotify:
                 DLOG("map notify");
@@ -152,7 +156,7 @@ void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **scree
                 break;
             case MapRequest:
                 DLOG("map request");
-                MapRequestHandler(display, &xEvent, windows, *screenInfo, *screenCount);
+                MapRequestHandler(display, &xEvent, windows, *screenInfo, *screenCount, *currentScreenNumber);
                 break;
             default:
                 DLOG("event type %d not handled", xEvent.type);
@@ -195,13 +199,14 @@ int main()
 
     ScreenInfo *screenInfo = NULL;
     int screenCount = 0;
-    if(Setup(display, cursors, &screenInfo, &screenCount))
+    int currentScreenNumber = 0;
+    if(Setup(display, cursors, &screenInfo, &screenCount, &currentScreenNumber))
     {
         DLOG("setup failed.");
         return EXIT_FAILURE;
     }
 
-    Run(display, cursors, &windows, &screenInfo, &screenCount);
+    Run(display, cursors, &windows, &screenInfo, &screenCount, &currentScreenNumber);
 
     Cleanup(display, cursors);
 

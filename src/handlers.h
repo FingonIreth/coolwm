@@ -18,7 +18,7 @@ typedef struct {
 } MouseGrabInfo;
 
 void MappingNotifyHandler(Display *display, XEvent *event);
-void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo, int screenCount, GSList *windows);
+void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo, int screenCount, GSList *windows, int *currentScreenNumber);
 void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
                          Cursor *cursors);
 void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
@@ -28,7 +28,7 @@ int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInf
 
 void ConfigureRequestHandler(Display *display, XEvent *xEvent);
 
-void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount);
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount, int currentScreenNumber);
 
 void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount);
 

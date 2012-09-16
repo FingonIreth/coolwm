@@ -111,6 +111,7 @@ ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount, int sc
     return NULL;
 }
 
+//XXX pay attention to window's border
 void TileScreen(Display *display, GSList *windows, ScreenInfo *screen, int tag)
 {
     int windowCount = 0;
@@ -133,7 +134,8 @@ void TileScreen(Display *display, GSList *windows, ScreenInfo *screen, int tag)
         Client *client = (Client *) windowIterator->data;
         if(client->screenNumber == screen->screenNumber && client->tag == tag)
         {
-            XMoveResizeWindow(display, client->window, windowX, screen->x + 0, screen->y + screen->width/windowCount, screen->height);
+            XMoveResizeWindow(display, client->window, windowX + screen->x, screen->y + 0,
+                              screen->width/windowCount, screen->height);
             windowX += screen->width/windowCount;
         }
 
