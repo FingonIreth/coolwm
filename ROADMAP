@@ -1,13 +1,24 @@
-TODO
-    change focus - keyboard shortcut
-    change screen - keyboard shortcut
-    (un)maximizing window
-    fullscreen
-    use third party panel
-    configuration file
+FOCUS
+    remember the focused client for each screen
+    focus next/prev client (mod + up/down arrow)
+    focus prev/next screen (mod + left/right arrow)
+    activate window (left mouse button)
+    focus border
 
-PUSHED BACK
-    minimalizing windows
-    introduce own panel
+WINDOW MANIPULATION
+    (un)maximizing window (mod + m)
+    (un)minimalizing windows (mod + shift + n / mod + n)
+    fullscreen (mod + f)
+    toggle client tile/floating status (mod + t)
+    send client to prev/next screen (mod + p / mod + o)
+    move client to tag (mod + shift + 1-9)
+
+TILING
+    introduce tiling layouts
+    mirror current layout (mod + h)
+    next/prev layout (mod + space / mod + shift + space)
+
+OTHERS
+    configuration file
     wallpaper
-    cool tiling
+    status bar
