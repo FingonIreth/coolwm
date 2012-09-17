@@ -56,7 +56,8 @@ Bool GrabKeys(Display *display)
 
     XUngrabKey(display, AnyKey, AnyModifier, root);
 
-    KeyCode keycode[] = {XKeysymToKeycode(display, XK_r),
+    KeyCode keycode[] = {XKeysymToKeycode(display, XK_Return),
+                         XKeysymToKeycode(display, XK_r),
                          XKeysymToKeycode(display, XK_c),
                          XKeysymToKeycode(display, XK_q),
                          XKeysymToKeycode(display, XK_1),

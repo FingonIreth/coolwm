@@ -160,7 +160,7 @@ int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInf
         KeySym keySym = XkbKeycodeToKeysym(display, xKeyEvent->keycode, 0, 0);
         if(keySym == XK_r)
         {
-            char* command[] = {"dmenu_run", NULL};
+            char *command[] = {"dmenu_run", NULL};
             Spawn(command);
         }
         else if (keySym == XK_c)
@@ -189,6 +189,12 @@ int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInf
                 ScreenInfo *screen = ScreenNumberToScreen(screenInfo, *screenCount, screenNumber);
                 changeTag(screen, i + 1, windows, display);
             }
+        }
+
+        if(keySym == XK_Return)
+        {
+            char *command[] = {"xterm", NULL};
+            Spawn(command);
         }
     }
 
