@@ -15,7 +15,8 @@ unsigned int NumlockMask(Display *display)
     {
 		for(int j = 0; j < modifierKeymap->max_keypermod; j++)
         {
-			if(modifierKeymap->modifiermap[i * modifierKeymap->max_keypermod + j]
+			if(modifierKeymap->modifiermap[i * modifierKeymap->max_keypermod
+                                           + j]
 			   == XKeysymToKeycode(display, XK_Num_Lock))
             {
 				numlockMask = (1 << i);
@@ -34,15 +35,18 @@ Bool GrabButtons(Display *display)
     XUngrabButton(display, AnyButton, AnyModifier, root);
 
     unsigned int numlockMask = NumlockMask(display);
-    unsigned int modifiers[] = {0, LockMask, numlockMask, numlockMask | LockMask};
+    unsigned int modifiers[] = {0, LockMask, numlockMask,
+                                numlockMask | LockMask};
     unsigned int buttons[] = {Button1, Button3};
 
     for(int b = 0; b < LENGTH(buttons); ++b)
     {
         for(int i = 0; i < LENGTH(modifiers); ++i)
         {
-            XGrabButton(display, buttons[b], Mod4Mask | modifiers[i], root, False,
-                        ButtonPressMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
+            XGrabButton(display, buttons[b], Mod4Mask | modifiers[i], root,
+                        False,
+                        ButtonPressMask | ButtonReleaseMask, GrabModeAsync,
+                        GrabModeAsync,
                         None, None);
         }
     }
@@ -75,7 +79,8 @@ Bool GrabKeys(Display *display)
         }
 
         unsigned int numlockMask = NumlockMask(display);
-        unsigned int modifiers[] = {0, LockMask, numlockMask, numlockMask | LockMask};
+        unsigned int modifiers[] = {0, LockMask, numlockMask,
+                                    numlockMask | LockMask};
         for(int i = 0; i < LENGTH(modifiers); ++i)
         {
             XGrabKey(display, keycode[k], Mod4Mask | modifiers[i], root,

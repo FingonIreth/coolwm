@@ -16,13 +16,16 @@ void MappingNotifyHandler(Display *display, XEvent *event)
         GrabKeys(display);
 }
 
-void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo, int screenCount, GSList *windows, int *currentScreenNumber)
+void MouseMotionHandler(Display *display, XEvent *xEvent,
+                        MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo,
+                        int screenCount, GSList *windows,
+                        int *currentScreenNumber)
 {
     XMotionEvent *xMotionEvent = (XMotionEvent *)xEvent;
 
-    *currentScreenNumber = PointToScreenNumber(screenInfo, &screenCount, xMotionEvent->x, xMotionEvent->y);
-
-    DLOG("currentScreenNumber %d", *currentScreenNumber);
+    *currentScreenNumber = PointToScreenNumber(screenInfo, &screenCount,
+                                               xMotionEvent->x,
+                                               xMotionEvent->y);
 
     if(!mouseGrabInfo->isActive)
     {
@@ -37,13 +40,17 @@ void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGr
         int newWindowX = mouseGrabInfo->windowX + xDifference;
         int newWindowY = mouseGrabInfo->windowY + yDifference;
 
-        XMoveWindow(display, mouseGrabInfo->draggedWindow, newWindowX, newWindowY);
-        int screenNumber = PointToScreenNumber(screenInfo, &screenCount, newWindowX, newWindowY);
+        XMoveWindow(display, mouseGrabInfo->draggedWindow, newWindowX,
+                    newWindowY);
+        int screenNumber = PointToScreenNumber(screenInfo, &screenCount,
+                                               newWindowX, newWindowY);
         Client client = {.window = mouseGrabInfo->draggedWindow};
-        GSList *clientNode = g_slist_find_custom(windows, &client, compareWindows);
+        GSList *clientNode = g_slist_find_custom(windows, &client,
+                                                 compareWindows);
         if(clientNode)
         {
-            ScreenInfo *screen = ScreenNumberToScreen(screenInfo, screenCount, screenNumber);
+            ScreenInfo *screen = ScreenNumberToScreen(screenInfo, screenCount,
+                                                      screenNumber);
             Client *client = (Client *) clientNode->data;
             client->screenNumber = screen->screenNumber;
             client->tag= screen->currentTag;
@@ -69,12 +76,13 @@ void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGr
             newWindowHeight = minHeight;
         }
 
-        XResizeWindow(display, mouseGrabInfo->draggedWindow, newWindowWidth, newWindowHeight);
+        XResizeWindow(display, mouseGrabInfo->draggedWindow, newWindowWidth,
+                      newWindowHeight);
     }
 }
 
-void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
-                         Cursor *cursors)
+void MouseReleaseHandler(Display *display, XEvent *xEvent,
+                         MouseGrabInfo *mouseGrabInfo, Cursor *cursors)
 {
     XButtonEvent *xButtonEvent = (XButtonEvent *)xEvent;
 
@@ -90,8 +98,8 @@ void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseG
     }
 }
 
-void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
-                       Cursor *cursors)
+void MousePressHandler(Display *display, XEvent *xEvent,
+                       MouseGrabInfo *mouseGrabInfo, Cursor *cursors)
 {
     if(mouseGrabInfo->isActive)
     {
@@ -109,7 +117,8 @@ void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGra
     {
 
         XWindowAttributes xWindowAttributes;
-        XGetWindowAttributes(display, xButtonEvent->subwindow, &xWindowAttributes);
+        XGetWindowAttributes(display, xButtonEvent->subwindow,
+                             &xWindowAttributes);
         if(XGrabPointer(display, xWindowAttributes.root, False,
                         ButtonPressMask | PointerMotionMask | ButtonReleaseMask,
                         GrabModeAsync, GrabModeAsync, None, cursors[MoveCursor],
@@ -129,12 +138,13 @@ void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGra
     else if((xButtonEvent->state & Mod4Mask) && xButtonEvent->button == Button3)
     {
         XWindowAttributes xWindowAttributes;
-        XGetWindowAttributes(display, xButtonEvent->subwindow, &xWindowAttributes);
+        XGetWindowAttributes(display, xButtonEvent->subwindow,
+                             &xWindowAttributes);
 
         if(XGrabPointer(display, xWindowAttributes.root, False,
                         ButtonPressMask | PointerMotionMask | ButtonReleaseMask,
-                        GrabModeAsync, GrabModeAsync, None, cursors[ResizeCursor],
-                        CurrentTime) != GrabSuccess)
+                        GrabModeAsync, GrabModeAsync, None,
+                        cursors[ResizeCursor], CurrentTime) != GrabSuccess)
         {
             return;
         }
@@ -147,11 +157,13 @@ void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGra
         mouseGrabInfo->windowHeight = xWindowAttributes.height;
         mouseGrabInfo->draggedWindow = xButtonEvent->subwindow;
 
-        XWarpPointer(display, None, mouseGrabInfo->draggedWindow, 0, 0, 0, 0, xWindowAttributes.width - 1, xWindowAttributes.height);
+        XWarpPointer(display, None, mouseGrabInfo->draggedWindow, 0, 0, 0, 0,
+                     xWindowAttributes.width - 1, xWindowAttributes.height);
     }
 }
 
-int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInfo *screenInfo, int *screenCount)
+int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows,
+                    ScreenInfo *screenInfo, int *screenCount)
 {
     XKeyEvent *xKeyEvent = (XKeyEvent *)xEvent;
 
@@ -185,8 +197,12 @@ int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInf
         {
             if (keySym == tagDigits[i])
             {
-                int screenNumber = PointToScreenNumber(screenInfo, screenCount, xKeyEvent->x, xKeyEvent->y);
-                ScreenInfo *screen = ScreenNumberToScreen(screenInfo, *screenCount, screenNumber);
+                int screenNumber = PointToScreenNumber(screenInfo, screenCount,
+                                                       xKeyEvent->x,
+                                                       xKeyEvent->y);
+                ScreenInfo *screen = ScreenNumberToScreen(screenInfo,
+                                                          *screenCount,
+                                                          screenNumber);
                 changeTag(screen, i + 1, windows, display);
             }
         }
@@ -203,9 +219,8 @@ int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInf
 
 void ConfigureRequestHandler(Display *display, XEvent *xEvent)
 {
-    //TODO better handling - tiling/floating, screen change
-    XConfigureRequestEvent *xConfigureRequestEvent = (XConfigureRequestEvent *)xEvent;
-    DLOG("x %d, y %d", xConfigureRequestEvent->x, xConfigureRequestEvent->y);
+    XConfigureRequestEvent *xConfigureRequestEvent =
+                                               (XConfigureRequestEvent *)xEvent;
     XWindowChanges xWindowChanges;
     xWindowChanges.x = xConfigureRequestEvent->x;
     xWindowChanges.y = xConfigureRequestEvent->y;
@@ -219,12 +234,15 @@ void ConfigureRequestHandler(Display *display, XEvent *xEvent)
                      xConfigureRequestEvent->value_mask, &xWindowChanges);
 }
 
-void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount, int currentScreenNumber)
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows,
+                       ScreenInfo *screenInfo, int screenCount,
+                       int currentScreenNumber)
 {
     XMapRequestEvent *xMapRequestEvent = (XMapRequestEvent *)xEvent;
     XWindowAttributes xWindowAttributes;
 
-    if(!XGetWindowAttributes(display, xMapRequestEvent->window, &xWindowAttributes))
+    if(!XGetWindowAttributes(display, xMapRequestEvent->window,
+                             &xWindowAttributes))
     {
         return;
     }
@@ -233,7 +251,9 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, Scree
     {
         return;
     }
-    ScreenInfo *currentScreen = ScreenNumberToScreen(screenInfo, screenCount, currentScreenNumber);
+
+    ScreenInfo *currentScreen = ScreenNumberToScreen(screenInfo, screenCount,
+                                                     currentScreenNumber);
     Client *client = (Client *)malloc(sizeof(Client));
     client->window = xMapRequestEvent->window;
     client->screenNumber = currentScreen->screenNumber;
@@ -241,7 +261,9 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, Scree
     XMoveWindow(display, client->window, currentScreen->x, currentScreen->y);
 
     Window root = XDefaultRootWindow(display);
-    if(xMapRequestEvent->parent == root && !g_slist_find_custom(*windows, client, compareWindows))
+    if(xMapRequestEvent->parent == root && !g_slist_find_custom(*windows,
+                                                                client,
+                                                                compareWindows))
     {
         *windows = g_slist_prepend(*windows, (gpointer)client);
     }
@@ -252,10 +274,13 @@ void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, Scree
     XMapWindow(display, xMapRequestEvent->window);
 }
 
-void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount)
+void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows,
+                          ScreenInfo *screenInfo, int screenCount)
 {
     XDestroyWindowEvent *xDestroyWindowEvent = (XDestroyWindowEvent *)xEvent;
-    GSList *client_node = g_slist_find_custom(*windows, &xDestroyWindowEvent->window, compareWindows);
+    GSList *client_node = g_slist_find_custom(*windows,
+                                              &xDestroyWindowEvent->window,
+                                              compareWindows);
     if(!client_node)
     {
         return;
@@ -263,7 +288,8 @@ void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, Sc
 
     Client *client = client_node->data;
     *windows = g_slist_remove(*windows, client_node->data);
-    ScreenInfo *screen = ScreenNumberToScreen(screenInfo, screenCount, client->screenNumber);
+    ScreenInfo *screen = ScreenNumberToScreen(screenInfo, screenCount,
+                                              client->screenNumber);
     TileScreen(display, *windows, screen, client->tag);
     free(client);
 }

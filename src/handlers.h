@@ -18,18 +18,25 @@ typedef struct {
 } MouseGrabInfo;
 
 void MappingNotifyHandler(Display *display, XEvent *event);
-void MouseMotionHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo, int screenCount, GSList *windows, int *currentScreenNumber);
-void MouseReleaseHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
-                         Cursor *cursors);
-void MousePressHandler(Display *display, XEvent *xEvent, MouseGrabInfo *mouseGrabInfo,
-                       Cursor *cursors);
+void MouseMotionHandler(Display *display, XEvent *xEvent,
+                        MouseGrabInfo *mouseGrabInfo, ScreenInfo *screenInfo,
+                        int screenCount, GSList *windows,
+                        int *currentScreenNumber);
+void MouseReleaseHandler(Display *display, XEvent *xEvent,
+                         MouseGrabInfo *mouseGrabInfo, Cursor *cursors);
+void MousePressHandler(Display *display, XEvent *xEvent,
+                       MouseGrabInfo *mouseGrabInfo, Cursor *cursors);
 
-int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows, ScreenInfo *screenInfo, int *screenCount);
+int KeyPressHandler(Display *display, XEvent *xEvent, GSList *windows,
+                    ScreenInfo *screenInfo, int *screenCount);
 
 void ConfigureRequestHandler(Display *display, XEvent *xEvent);
 
-void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount, int currentScreenNumber);
+void MapRequestHandler(Display *display, XEvent *xEvent, GSList **windows,
+                       ScreenInfo *screenInfo, int screenCount,
+                       int currentScreenNumber);
 
-void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows, ScreenInfo *screenInfo, int screenCount);
+void DestroyNotifyHandler(Display *display, XEvent *xEvent, GSList **windows,
+                          ScreenInfo *screenInfo, int screenCount);
 
 #endif /* HANDLERS_H */

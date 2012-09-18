@@ -39,11 +39,13 @@ int SendEvent(Display *display, Window window, Atom protocol);
 
 gint compareWindows(gconstpointer a, gconstpointer b);
 
-void changeTag(ScreenInfo *screen, int targetTag, GSList *windows, Display *display);
+void changeTag(ScreenInfo *screen, int targetTag, GSList *windows,
+               Display *display);
 
 int PointToScreenNumber(ScreenInfo *screenInfo, int *screenCount, int x, int y);
 
-ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount, int screenNumber);
+ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount,
+                                 int screenNumber);
 
 void TileScreen(Display *display, GSList *windows, ScreenInfo *screen, int tag);
 

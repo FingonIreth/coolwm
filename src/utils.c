@@ -45,7 +45,8 @@ int SendEvent(Display *display, Window window, Atom protocol)
     {
         xEvent.type = ClientMessage;
         xEvent.xclient.window = window;
-        xEvent.xclient.message_type = XInternAtom(display, "WM_PROTOCOLS", True);
+        xEvent.xclient.message_type =
+                                     XInternAtom(display, "WM_PROTOCOLS", True);
         xEvent.xclient.format = 32;
         xEvent.xclient.data.l[0] = protocol;
         xEvent.xclient.data.l[1] = CurrentTime;
@@ -61,14 +62,16 @@ gint compareWindows(gconstpointer a, gconstpointer b)
 }
 
 
-void changeTag(ScreenInfo *screen, int targetTag, GSList *windows, Display *display)
+void changeTag(ScreenInfo *screen, int targetTag, GSList *windows,
+               Display *display)
 {
     screen->currentTag = targetTag;
     GSList *window_iterator = windows;
     while(window_iterator)
     {
         Client *client = (Client *) window_iterator->data;
-        if(client->tag == targetTag && client->screenNumber == screen->screenNumber)
+        if(client->tag == targetTag
+           && client->screenNumber == screen->screenNumber)
         {
             DLOG("show window");
             XMapWindow(display, client->window);
@@ -89,7 +92,8 @@ int PointToScreenNumber(ScreenInfo *screenInfo, int *screenCount, int x, int y)
     for(int i = 0; i < *screenCount; ++i)
     {
         if(screenInfo[i].x <= x && x <= screenInfo[i].x + screenInfo[i].width
-           && screenInfo[i].y <= y && y <= screenInfo[i].y + screenInfo[i].height)
+           && screenInfo[i].y <= y
+           && y <= screenInfo[i].y + screenInfo[i].height)
         {
             return screenInfo[i].screenNumber;
         }
@@ -98,7 +102,8 @@ int PointToScreenNumber(ScreenInfo *screenInfo, int *screenCount, int x, int y)
     return -1;
 }
 
-ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount, int screenNumber)
+ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount,
+                                 int screenNumber)
 {
     for(int i = 0; i < screenCount; ++i)
     {
@@ -134,8 +139,9 @@ void TileScreen(Display *display, GSList *windows, ScreenInfo *screen, int tag)
         Client *client = (Client *) windowIterator->data;
         if(client->screenNumber == screen->screenNumber && client->tag == tag)
         {
-            XMoveResizeWindow(display, client->window, windowX + screen->x, screen->y + 0,
-                              screen->width/windowCount, screen->height);
+            XMoveResizeWindow(display, client->window, windowX + screen->x,
+                                screen->y + 0, screen->width/windowCount,
+                                screen->height);
             windowX += screen->width/windowCount;
         }
 

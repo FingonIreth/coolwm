@@ -14,8 +14,8 @@
 #include "utils.h"
 #include "handlers.h"
 
-
-int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screenCount, int *currentScreenNumber)
+int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo,
+          int *screenCount, int *currentScreenNumber)
 {
     signal(SIGCHLD, CatchExitStatus);
 
@@ -32,8 +32,6 @@ int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screen
             (*screenInfo)[i].y = xineramaScreenInfo[i].y_org;
             (*screenInfo)[i].width = xineramaScreenInfo[i].width;
             (*screenInfo)[i].height = xineramaScreenInfo[i].height;
-            DLOG("screen number %d; x %d;  y %d; w %d; h %d;", xineramaScreenInfo[i].screen_number,
-                 xineramaScreenInfo[i].x_org, xineramaScreenInfo[i].y_org, xineramaScreenInfo[i].width, xineramaScreenInfo[i].height);
         }
         XFree(xineramaScreenInfo);
     }
@@ -76,15 +74,17 @@ int Setup(Display *display, Cursor *cursor, ScreenInfo **screenInfo, int *screen
     XDefineCursor(display, root, cursor[NormalCursor]);
 
     XSetWindowAttributes rootAttributes;
-    rootAttributes.event_mask = SubstructureNotifyMask | SubstructureRedirectMask | PointerMotionMask;
+    rootAttributes.event_mask = SubstructureNotifyMask
+                                | SubstructureRedirectMask
+                                | PointerMotionMask;
     XChangeWindowAttributes(display, root, CWEventMask, &rootAttributes);
-
     XSelectInput(display, root, rootAttributes.event_mask);
 
     return 0;
 }
 
-void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **screenInfo, int *screenCount, int *currentScreenNumber)
+void Run(Display *display, Cursor *cursors, GSList **windows,
+         ScreenInfo **screenInfo, int *screenCount, int *currentScreenNumber)
 {
     XEvent xEvent;
     MouseGrabInfo mouseGrabInfo = {.isActive = 0};
@@ -102,7 +102,8 @@ void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **scree
                 break;
             case KeyPress:
                 DLOG("keypress event");
-                if(KeyPressHandler(display, &xEvent, *windows, *screenInfo, screenCount))
+                if(KeyPressHandler(display, &xEvent, *windows, *screenInfo,
+                                   screenCount))
                 {
                     quit = True;
                 }
@@ -120,7 +121,9 @@ void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **scree
                 break;
             case MotionNotify:
                 DLOG("motion notify");
-                MouseMotionHandler(display, &xEvent, &mouseGrabInfo, *screenInfo, *screenCount, *windows, currentScreenNumber);
+                MouseMotionHandler(display, &xEvent, &mouseGrabInfo,
+                                   *screenInfo, *screenCount, *windows,
+                                   currentScreenNumber);
                 break;
             case MapNotify:
                 DLOG("map notify");
@@ -139,7 +142,8 @@ void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **scree
                 break;
             case DestroyNotify:
                 DLOG("destroy notify");
-                DestroyNotifyHandler(display, &xEvent, windows, *screenInfo, *screenCount);
+                DestroyNotifyHandler(display, &xEvent, windows, *screenInfo,
+                                     *screenCount);
                 break;
             case GravityNotify:
                 DLOG("gravity notify");
@@ -156,22 +160,12 @@ void Run(Display *display, Cursor *cursors, GSList **windows, ScreenInfo **scree
                 break;
             case MapRequest:
                 DLOG("map request");
-                MapRequestHandler(display, &xEvent, windows, *screenInfo, *screenCount, *currentScreenNumber);
+                MapRequestHandler(display, &xEvent, windows, *screenInfo,
+                                  *screenCount, *currentScreenNumber);
                 break;
             default:
                 DLOG("event type %d not handled", xEvent.type);
         }
-
-        GSList *windowIterator = *windows;
-        while(windowIterator)
-        {
-            Client *client = (Client *) windowIterator->data;
-            DLOG("window screen: %d; tag: %d", client->screenNumber, client->tag);
-
-            windowIterator = windowIterator->next;
-        }
-
-        DLOG("windows list size %d", g_slist_length(*windows));
     }
 }
 
@@ -185,10 +179,6 @@ void Cleanup(Display *display, Cursor *cursor)
 int main()
 {
     Display *display = XOpenDisplay(NULL);
-    Cursor cursors[CursorsCount];
-
-    GSList *windows = NULL;
-    (void)windows;
 
     if(!display)
     {
@@ -198,15 +188,19 @@ int main()
     }
 
     ScreenInfo *screenInfo = NULL;
+    GSList *windows = NULL;
     int screenCount = 0;
     int currentScreenNumber = 0;
+    Cursor cursors[CursorsCount];
+
     if(Setup(display, cursors, &screenInfo, &screenCount, &currentScreenNumber))
     {
         DLOG("setup failed.");
         return EXIT_FAILURE;
     }
 
-    Run(display, cursors, &windows, &screenInfo, &screenCount, &currentScreenNumber);
+    Run(display, cursors, &windows, &screenInfo, &screenCount,
+        &currentScreenNumber);
 
     Cleanup(display, cursors);
 
