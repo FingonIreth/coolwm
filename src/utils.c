@@ -86,21 +86,53 @@ void changeTag(ScreenInfo *screen, int targetTag, GSList *windows,
     }
 }
 
-//XXX wrong and not robust
-int PointToScreenNumber(ScreenInfo *screenInfo, int *screenCount, int x, int y)
+int SquaredPointToRectangleDistance(int x, int y, int topLeftX, int topLeftY, int width, int height)
 {
-    for(int i = 0; i < *screenCount; ++i)
+    int xDistance = 0;
+    if(x < topLeftX)
     {
-        if(screenInfo[i].x <= x && x <= screenInfo[i].x + screenInfo[i].width
-           && screenInfo[i].y <= y
-           && y <= screenInfo[i].y + screenInfo[i].height)
-        {
-            return screenInfo[i].screenNumber;
-        }
+        xDistance = topLeftX - x;
+    }
+    else if(x > topLeftX + width - 1)
+    {
+        xDistance = x - topLeftX - width + 1;
     }
 
-    return -1;
+    int yDistance = 0;
+    if(y < topLeftY)
+    {
+        yDistance = topLeftY - y;
+    }
+    else if(y > topLeftX + height - 1)
+    {
+        yDistance = y - topLeftY - height + 1;
+    }
+
+    return xDistance * xDistance + yDistance * yDistance;
 }
+
+int PointToScreenNumber(ScreenInfo *screenInfo, int *screenCount, int x, int y)
+{
+    int screenNumber = -1;
+    int shortestDistance = -1;
+    for(int i = 0; i < *screenCount; ++i)
+    {
+        int distance = SquaredPointToRectangleDistance(x, y, screenInfo[i].x,
+                                                       screenInfo[i].y,
+                                                       screenInfo[i].width,
+                                                       screenInfo[i].height);
+
+        if(shortestDistance ==  -1 || distance < shortestDistance)
+        {
+            screenNumber = screenInfo[i].screenNumber;
+            shortestDistance = distance;
+        }
+
+    }
+
+    return screenNumber;
+}
+
 
 ScreenInfo *ScreenNumberToScreen(ScreenInfo *screenInfo, int screenCount,
                                  int screenNumber)
